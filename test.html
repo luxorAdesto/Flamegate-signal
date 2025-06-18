@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>FlameGate Verification</title>
+</head>
+<body>
+  <h1>Send FlameGate SMS</h1>
+  <form id="form">
+    <input type="text" id="phone" placeholder="Enter phone number" />
+    <button type="submit">Send Code</button>
+  </form>
+  <script>
+    document.getElementById('form').addEventListener('submit', async e => {
+      e.preventDefault();
+      const phone = document.getElementById('phone').value;
+      const res = await fetch('/start-verification', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ phone })
+      });
+      const data = await res.json();
+      alert(JSON.stringify(data));
+    });
+  </script>
+</body>
+</html>
