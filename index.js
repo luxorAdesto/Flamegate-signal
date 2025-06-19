@@ -17,6 +17,11 @@ app.get('/test', (req, res) => {
   res.send('<h1>✅ FlameGate test route reached.</h1>');
 });
 
+app.get('/', (req, res) => {
+  res.setHeader('Content-Type', 'text/html');
+  res.sendFile(__dirname + '/test.html');
+});
+
 app.post('/start-verification', async (req, res) => {
   const { phone } = req.body;
   if (!phone) return res.status(400).send({ error: 'Phone number required.' });
