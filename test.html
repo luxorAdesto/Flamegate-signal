@@ -1,26 +1,118 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>FlameGate Verification</title>
+  <title>🔥 FlameGate Verification</title>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron&display=swap" rel="stylesheet">
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Orbitron', sans-serif;
+      background: radial-gradient(circle at center, #0f0f2e 0%, #000000 100%);
+      color: #00ffff;
+      text-align: center;
+      padding-top: 5%;
+    }
+    h2 {
+      color: #ffcc00;
+      text-shadow: 0 0 12px #ffcc00;
+      font-size: 2em;
+    }
+    input, button {
+      font-family: 'Orbitron', sans-serif;
+      padding: 10px;
+      margin: 10px;
+      font-size: 1em;
+      background-color: #000;
+      border: 2px solid #00ffff;
+      color: #00ffff;
+      border-radius: 8px;
+      transition: all 0.3s ease;
+    }
+    #code:focus {
+      box-shadow: 0 0 15px #00ffff;
+      border: 1px solid #00ffff;
+    }
+    button:hover {
+      background-color: #00ffff;
+      color: #000;
+      cursor: pointer;
+    }
+    #result {
+      margin-top: 20px;
+      font-size: 1.2em;
+      color: #00ff88;
+    }
+    #sigil {
+      display: none;
+      position: absolute;
+      top: 10%;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 150px;
+      height: 150px;
+     background: url('https://upload.wikimedia.org/wikipedia/commons/thumb/e/e1/Flame_icon.svg/1200px-Flame_icon.svg.png') no-repeat center/contain;  no-repeat center/contain;
+      animation: pulse 1s ease-in-out;
+    }
+    @keyframes pulse {
+      0% { opacity: 0; transform: scale(0.8); }
+      50% { opacity: 1; transform: scale(1.1); }
+      100% { opacity: 0; transform: scale(0.8); }
+    }
+  </style>
 </head>
 <body>
-  <h1>Send FlameGate SMS</h1>
-  <form id="form">
-    <input type="text" id="phone" placeholder="Enter phone number" />
-    <button type="submit">Send Code</button>
-  </form>
-  <script>
-    document.getElementById('form').addEventListener('submit', async e => {
-      e.preventDefault();
-      const phone = document.getElementById('phone').value;
-      const res = await fetch('/start-verification', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ phone })
-      });
-      const data = await res.json();
-      alert(JSON.stringify(data));
+
+<h2>Send FlameGate SMS</h2>
+<input type="text" id="phone" placeholder="Enter phone number">
+<button onclick="sendCode()">Send Code</button>
+
+<h2>Verify Code</h2>
+<input type="text" id="verifyPhone" placeholder="Enter phone number again">
+<input type="text" id="code" placeholder="Enter verification code">
+<button id="verifyButton">Verify</button>
+
+<div id="result"></div>
+<div id="sigil"></div>
+
+<audio id="soundSuccess" src="https://assets.mixkit.co/sfx/preview/mixkit-correct-answer-reward-1083.mp3"></audio>
+<audio id="soundFail" src="https://assets.mixkit.co/sfx/preview/mixkit-wrong-answer-fail-notification-946.mp3"></audio>
+
+<script>
+  async function sendCode() {
+    const phone = document.getElementById('phone').value;
+    const res = await fetch('/start-verification', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ phone })
     });
-  </script>
+    const data = await res.json();
+    document.getElementById('result').innerText = data.message || data.error;
+  }
+
+  document.getElementById('verifyButton').addEventListener('click', async () => {
+    const phone = document.getElementById('verifyPhone').value;
+    const code = document.getElementById('code').value;
+
+    const res = await fetch('/verify-code', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ phone, code })
+    });
+
+    const data = await res.json();
+    document.getElementById('result').innerText = data.message || data.error;
+
+    if (data.success) {
+      document.getElementById('soundSuccess').play();
+      document.getElementById('sigil').style.display = 'block';
+      setTimeout(() => {
+        document.getElementById('sigil').style.display = 'none';
+      }, 1500);
+    } else {
+      document.getElementById('soundFail').play();
+    }
+  });
+</script>
+
 </body>
 </html>

@@ -4,18 +4,11 @@ const bodyParser = require('body-parser');
 const axios = require('axios');
 
 const app = express();
-
 app.use(express.static(__dirname));
-
 app.use(express.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
 const verifications = {};
-
-app.get('/test', (req, res) => {
-  res.setHeader('Content-Type', 'text/html');
-  res.send('<h1>✅ FlameGate test route reached.</h1>');
-});
 
 app.get('/', (req, res) => {
   res.setHeader('Content-Type', 'text/html');
@@ -23,7 +16,7 @@ app.get('/', (req, res) => {
 });
 
 app.post('/start-verification', async (req, res) => {
-  const { phone } = req.body;
+  const phone = req.body.phone.toString().trim();
   if (!phone) return res.status(400).send({ error: 'Phone number required.' });
 
   const code = Math.floor(100000 + Math.random() * 900000);
@@ -33,8 +26,9 @@ app.post('/start-verification', async (req, res) => {
     const response = await axios.post('https://textbelt.com/text', {
       phone,
       message: `Your FlameGate verification code is: ${code}`,
-      key: process.env.TEXTBELT_API_KEY,
+      key: process.env.TEXTBELT_KEY,
     });
+
     if (response.data.success) {
       res.send({ message: '🔥 Verification code sent.' });
     } else {
@@ -47,11 +41,17 @@ app.post('/start-verification', async (req, res) => {
 
 app.post('/verify-code', (req, res) => {
   const { phone, code } = req.body;
-  if (verifications[phone] && verifications[phone] == code) {
-    delete verifications[phone];
-    res.send({ message: '✅ Verification successful.' });
+  const phoneStr = phone.toString().trim();
+
+  console.log('Received verify request');
+  console.log('Stored:', verifications[phoneStr]);
+  console.log('Entered:', code);
+
+  if (verifications[phoneStr] && verifications[phoneStr] == code) {
+    delete verifications[phoneStr];
+    res.send({ success: true, message: '✅ Verification successful.' });
   } else {
-    res.status(400).send({ error: '❌ Invalid or expired code.' });
+    res.status(400).send({ success: false, error: '❌ Invalid or expired code.' });
   }
 });
 
